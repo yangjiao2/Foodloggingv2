@@ -1,0 +1,9 @@
+
+new ClarifaiBuilder("{clientId}", "{clientSecret}").buildSync().registerAsDefaultInstance();
+
+final ClarifaiResponse<List<SearchHit>> trainImages = Clarifai.searchInputs(
+    // Finds images that match this picture of a train
+    SearchClause.matchImageVisually(ClarifaiImage.of("https://samples.clarifai.com/metro-north.jpg"))
+)
+    .getPage(1)
+    .executeSync();
