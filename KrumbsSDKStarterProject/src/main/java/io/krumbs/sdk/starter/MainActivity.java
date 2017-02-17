@@ -37,17 +37,17 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-/*        preloadMaps();*/
+        preloadMaps();
 
         setContentView(R.layout.app_bar_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
-/*        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar);
         if (savedInstanceState == null) {
             kDashboard = buildDashboard();
             getSupportFragmentManager().beginTransaction().replace(R.id.content, kDashboard).commit();
         }
         KrumbsSDK.setUserPreferences(
-                new KUserPreferences.KUserPreferencesBuilder().audioRecordingEnabled(true).build());*/
+                new KUserPreferences.KUserPreferencesBuilder().audioRecordingEnabled(true).build());
         startCaptureButton = findViewById(R.id.start_report_button);
         startCaptureButton.setEnabled(false);
         startCaptureButton.setVisibility(View.INVISIBLE);
@@ -55,14 +55,7 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
             startCaptureButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String textEntered = "Message from main activity";
-                    Context context = MainActivity.this;
-                    Class destinationActivity = CaptureActivity.class;
-                    Intent startChildActivityIntent = new Intent(context, destinationActivity);
-                    startChildActivityIntent.putExtra(Intent.EXTRA_TEXT, textEntered);
-                    startActivity(startChildActivityIntent);
-
-                    //startCapture();
+                    startCapture();
                 }
             });
         }
@@ -128,6 +121,15 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
                         Event ev = (Event) map.get(KCaptureCompleteListener.CAPTURE_EVENT);
                         Log.i("KRUMBS-CALLBACK", "Event captured = " + ev.objectId());
                     }
+
+                    /*TODO send the image to the CaptureActivity*/
+
+                    Context context = MainActivity.this;
+                    Class destinationActivity = CaptureActivity.class;
+                    Intent startChildActivityIntent = new Intent(context, destinationActivity);
+                    startChildActivityIntent.putExtra(Intent.EXTRA_TEXT, imagePath);
+                    startActivity(startChildActivityIntent);
+
                 } else if (completionState == CompletionState.CAPTURE_CANCELLED ||
                         completionState == CompletionState.SDK_NOT_INITIALIZED) {
                 }

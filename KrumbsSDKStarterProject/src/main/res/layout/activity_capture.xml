@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,18 +10,20 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".CaptureActivity">
-
-    <TextView
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/iv_image" />
+<!--    <TextView
         android:id="@+id/tv_display"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="This is default text. Hopefully it changes."
-        android:textSize="30sp"/>
+        android:textSize="30sp"/>-->
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Return"
-        android:id="@+id/bt_return"
-        />
-
-</FrameLayout>
+        android:id="@+id/bn_return"
+        android:layout_gravity="bottom|center_horizontal"/>
+</LinearLayout>
