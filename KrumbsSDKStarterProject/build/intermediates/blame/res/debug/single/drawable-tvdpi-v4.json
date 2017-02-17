@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/home/baconleung/AndroidStudioProjects/KrumbsSample/KrumbsSDKStarterProject/build/intermediates/res/merged/debug/drawable-tvdpi-v4/krumbssdk_appicon.png",
+        "source": "/home/baconleung/AndroidStudioProjects/KrumbsSample/KrumbsSDKStarterProject/src/main/res/drawable-tvdpi/krumbssdk_appicon.png"
+    },
+    {
+        "merged": "/home/baconleung/AndroidStudioProjects/Foodloggingv2/KrumbsSDKStarterProject/build/intermediates/res/merged/debug/drawable-tvdpi-v4/krumbssdk_appicon.png",
+        "source": "/home/baconleung/AndroidStudioProjects/Foodloggingv2/KrumbsSDKStarterProject/src/main/res/drawable-tvdpi/krumbssdk_appicon.png"
+    }
+]
