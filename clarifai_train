@@ -1,0 +1,37 @@
+new ClarifaiBuilder("{clientId}", "{clientSecret}").buildSync().registerAsDefaultInstance();
+
+// Create some concepts
+Clarifai.addConcepts()
+    .plus(
+        Concept.forID("boscoe")
+    )
+    .executeSync();
+
+// All concepts need at least one "positive example" (ie, an input whose image file contains that concept)
+// So we will add a positive and a negative example of Boscoe
+Clarifai.addInputs()
+    .plus(
+        ClarifaiInput.forImage(ClarifaiImage.of("https://samples.clarifai.com/puppy.jpeg"))
+            .withConcepts(
+                Concept.forID("boscoe")
+            ),
+        ClarifaiInput.forImage(ClarifaiImage.of("https://samples.clarifai.com/wedding.jpg"))
+            .withConcepts(
+                Concept.forID("boscoe").withValue(false)
+            )
+    )
+    .executeSync();
+
+
+// Now that you have created the boscoe concept, and you have positive
+// examples of this concept, you can create a Model that knows this concept
+final ConceptModel petsModel = Clarifai.createModel("pets")
+    .withOutputInfo(ConceptOutputInfo.forConcepts(
+        Concept.forID("boscoe")
+    ))
+    .executeSync()
+    .get();
+
+// Now that your app contains inputs with the concepts that you wanted to
+// detect, you can train your "pets" model
+petsModel.train().executeSync();
