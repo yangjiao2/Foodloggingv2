@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016 Krumbs Inc
+  ~ All rights reserved.
+  ~
+  -->
+<resources>
+    <string name="krumbssdk_app_id">f4HQJDDL5ORlCS3zWMGvIx6m4VrcZ_PloU4BDH3Im-Y=</string>
+    <string name="krumbssdk_client_key">xCDPftDsEgVACQcMrQzYbWn83GIF2USIyviQJ8REqT8=</string>
+
+    <string name="app_name">Krumbs SDK Starter Project</string>
+
+    <string name="hello_world">Hello World!</string>
+    <string name="krumbs_sdk_app">Krumbs SDK Application</string>
+    <string name="action_settings">Settings</string>
+    <string name="kcapturebuttonLabel">Start K-Capture</string>
+</resources>
