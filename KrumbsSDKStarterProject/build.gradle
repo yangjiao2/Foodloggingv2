@@ -24,6 +24,10 @@ android {
 }
 
 dependencies {
+    //KRUMBS API
     compile 'io.krumbs.sdk:krumbs-sdk:2.3.0-SNAPSHOT'
-    //compile 'com.android.support:appcompat-v7:25.1.0'
+    //CLARIFI API
+    compile 'com.clarifai.clarifai-api2:core:2.0.2'
+    compile 'com.android.support:recyclerview-v7:25.1.1'
+
 }
