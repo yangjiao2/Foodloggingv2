@@ -17,23 +17,48 @@ import io.krumbs.sdk.KrumbsSDK;
 import io.krumbs.sdk.KrumbsUser;
 import io.krumbs.sdk.data.model.Media;
 import io.krumbs.sdk.krumbscapture.KMediaUploadListener;
+import clarifai2.api.ClarifaiBuilder;
+import clarifai2.api.ClarifaiClient;
 
 
 public class StarterApplication extends Application {
+
+    private static StarterApplication INSTANCE;
+
+    //URI and URL below are used to distinguished the form of image path.
+    public static final String INTENT_IMAGE_URI = "image_uri";
+    public static final String INTENT_IMAGE_URL = "image_url";
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        INSTANCE = this;
+        initKrumbs();
+        initClarifai();
+    }
+
+    public static StarterApplication getInstance(){
+        final StarterApplication instance = INSTANCE;
+        if(instance == null){
+            throw new IllegalStateException("App has not been created yet!");
+        }
+        return instance;
+    }
+
+    ///////////////////////////////////////////////////////////////
+    //Krumbs
+    ///////////////////////////////////////////////////////////////
     public static final String KRUMBS_SDK_APPLICATION_ID = "io.krumbs.sdk.APPLICATION_ID";
     public static final String KRUMBS_SDK_CLIENT_KEY = "io.krumbs.sdk.CLIENT_KEY";
     public static final String SDK_STARTER_PROJECT_USER_FN = "JohnQ";
     public static final String SDK_STARTER_PROJECT_USER_SN = "Public";
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
+    private void initKrumbs(){
         String appID = getMetadata(getApplicationContext(), KRUMBS_SDK_APPLICATION_ID);
         String clientKey = getMetadata(getApplicationContext(), KRUMBS_SDK_CLIENT_KEY);
         if (appID != null && clientKey != null) {
-        // SDK usage step 1 - initialize the SDK with your application id and client key
-        // Make sure the application id and client key are correctly initialized in the Manifest
+            // SDK usage step 1 - initialize the SDK with your application id and client key
+            // Make sure the application id and client key are correctly initialized in the Manifest
             KrumbsSDK.initialize(getApplicationContext(), appID, clientKey);
 
 // Implement the interface KMediaUploadListener.
@@ -87,4 +112,23 @@ public class StarterApplication extends Application {
         }
         return null;
     }
+
+    ///////////////////////////////////////////////////////////////
+    // Initialize Clarifai client
+    ///////////////////////////////////////////////////////////////
+    private ClarifaiClient client;
+
+    private void initClarifai(){
+        client = new ClarifaiBuilder(getString(R.string.clarifai_client_id), getString(R.string.clarifai_client_secret))
+                .buildSync();
+    }
+
+    public ClarifaiClient getClarifaiClient(){
+        final ClarifaiClient client = this.client;
+        if(client == null){
+            throw new IllegalStateException("Cannot use Clarifai client before initialized");
+        }
+        return client;
+    }
+
 }

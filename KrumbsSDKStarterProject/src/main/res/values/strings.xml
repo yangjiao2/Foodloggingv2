@@ -8,6 +8,9 @@
     <string name="krumbssdk_app_id">f4HQJDDL5ORlCS3zWMGvIx6m4VrcZ_PloU4BDH3Im-Y=</string>
     <string name="krumbssdk_client_key">xCDPftDsEgVACQcMrQzYbWn83GIF2USIyviQJ8REqT8=</string>
 
+    <string name="clarifai_client_id">iHhYlH55Vhkk2XsV-ucG5TddwM-NH1Zne5lTqWjE</string>
+    <string name="clarifai_client_secret">jQELXrDppUgSHtp4N39HKoNjHACu0oMVIIudeiwQ</string>
+
     <string name="app_name">Krumbs SDK Starter Project</string>
 
     <string name="hello_world">Hello World!</string>

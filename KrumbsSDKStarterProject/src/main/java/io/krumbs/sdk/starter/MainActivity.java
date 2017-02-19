@@ -9,7 +9,9 @@ import com.google.android.gms.maps.MapView;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -28,18 +30,24 @@ import io.krumbs.sdk.data.model.Event;
 import io.krumbs.sdk.krumbscapture.KCaptureCompleteListener;
 import io.krumbs.sdk.krumbscapture.settings.KUserPreferences;
 
+import static io.krumbs.sdk.starter.StarterApplication.INTENT_IMAGE_URI;
+import static io.krumbs.sdk.starter.StarterApplication.INTENT_IMAGE_URL;
+
 
 public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptureReadyCallback {
     private KGadgetDataTimePeriod defaultInitialTimePeriod = KGadgetDataTimePeriod.TODAY;
     private KDashboardFragment kDashboard;
     private View startCaptureButton;
+    private FloatingActionButton mFABGallery;
 
+    private static final int SELECT_PICTURE = 212;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         preloadMaps();
 
         setContentView(R.layout.app_bar_main);
+        //setting the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
         if (savedInstanceState == null) {
@@ -48,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
         }
         KrumbsSDK.setUserPreferences(
                 new KUserPreferences.KUserPreferencesBuilder().audioRecordingEnabled(true).build());
+        //setting the capture button
         startCaptureButton = findViewById(R.id.start_report_button);
         startCaptureButton.setEnabled(false);
         startCaptureButton.setVisibility(View.INVISIBLE);
@@ -55,10 +64,23 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
             startCaptureButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    //set FAB_Gallery invisible
+                    mFABGallery.setVisibility(View.INVISIBLE);
                     startCapture();
                 }
             });
         }
+
+        //setting the gallery button
+        mFABGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
+        mFABGallery.setVisibility(View.VISIBLE);
+        mFABGallery.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                onClickFABGallery();
+            }
+        });
+
         // It is REQUIRED to set this Callback for Krumbs Capture to Work.
         // You can  invoke KrumbsSDK.startCapture only when this callback returns. Not setting this correctly will
         // result in exceptions. Also note that the startCaptureButton is hidden until this callback returns.
@@ -123,12 +145,12 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
                     }
 
                     /*TODO send the image to the CaptureActivity*/
-
                     Context context = MainActivity.this;
                     Class destinationActivity = CaptureActivity.class;
                     Intent startChildActivityIntent = new Intent(context, destinationActivity);
-                    startChildActivityIntent.putExtra(Intent.EXTRA_TEXT, imagePath);
+                    startChildActivityIntent.putExtra(INTENT_IMAGE_URL, imagePath);
                     startActivity(startChildActivityIntent);
+
 
                 } else if (completionState == CompletionState.CAPTURE_CANCELLED ||
                         completionState == CompletionState.SDK_NOT_INITIALIZED) {
@@ -200,6 +222,35 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
         if (startCaptureButton != null) {
             startCaptureButton.setVisibility(View.VISIBLE);
             startCaptureButton.setEnabled(true);
+        }
+    }
+
+
+    public void onClickFABGallery(){
+        /*TODO send the image chosen from gallery to the CaptureActivity*/
+        //Open image Gallery
+        Intent intentGallery = new Intent();
+        intentGallery.setType("image/*");
+        intentGallery.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intentGallery,"Select Picture"),SELECT_PICTURE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //handle the image result returned from the ImageGallery
+        if (resultCode == RESULT_OK) {
+            if (requestCode == SELECT_PICTURE) {
+                Uri selectedImageUri = data.getData();
+                if (null != selectedImageUri) {
+                    //Change to child activity
+                    Context context = MainActivity.this;
+                    Class destinationActivity = CaptureActivity.class;
+                    Intent startChildActivityIntent = new Intent(context, destinationActivity);
+                    startChildActivityIntent.putExtra(INTENT_IMAGE_URI, selectedImageUri.toString());
+                    startActivity(startChildActivityIntent);
+                }
+            }
         }
     }
 }
