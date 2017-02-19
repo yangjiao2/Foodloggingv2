@@ -15,6 +15,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.view.View;
 
@@ -41,6 +42,7 @@ import io.krumbs.sdk.starter.Adapter.IngredientAdapter;
 
 public class CaptureActivity extends AppCompatActivity {
  //   private TextView mDisplayText;
+    private ProgressBar mProgressBar;
     private Button mButtonReturn;
     private ImageView mImageView;
     private RecyclerView mIngredientList;
@@ -51,11 +53,13 @@ public class CaptureActivity extends AppCompatActivity {
         setContentView(R.layout.activity_capture);
 
         /* Typical usage of findViewById... */
+        mProgressBar = (ProgressBar) findViewById(R.id.pb_processing);
         mButtonReturn = (Button) findViewById(R.id.bn_return);
         mImageView = (ImageView) findViewById(R.id.iv_image);
         mIngredientList = (RecyclerView) findViewById(R.id.rv_prediction);
 
         //Setting RecyclerView
+        mProgressBar.setVisibility(View.VISIBLE);
         mIngredientList.setLayoutManager(new LinearLayoutManager(this));
         mIngredientList.setAdapter(mAdapter);
 
@@ -161,6 +165,7 @@ public class CaptureActivity extends AppCompatActivity {
                 //Set the data to the RecyclerView Adapter
                 List<Concept> concepts = predictions.get(0).data();
                 mAdapter.setData(concepts);
+                mProgressBar.setVisibility(View.INVISIBLE);
             }
         }.execute();
     }

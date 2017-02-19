@@ -23,6 +23,11 @@
         android:backgroundTint="@color/light_blue"
         android:id="@+id/bn_return"
         android:layout_gravity="start"/>
+    <ProgressBar
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center"
+        android:id="@+id/pb_processing"/>
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
