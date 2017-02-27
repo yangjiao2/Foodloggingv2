@@ -36,6 +36,9 @@
         <activity android:name=".CaptureActivity">
 
         </activity>
+        <activity android:name=".AnalyzeNutritionActivity">
+
+        </activity>
     </application>
 
 </manifest>

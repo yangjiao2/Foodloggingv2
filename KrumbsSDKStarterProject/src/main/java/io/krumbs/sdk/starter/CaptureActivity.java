@@ -5,22 +5,26 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.view.View;
 
 import java.io.File;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.io.ByteArrayOutputStream;
@@ -44,9 +48,11 @@ public class CaptureActivity extends AppCompatActivity {
  //   private TextView mDisplayText;
     private ProgressBar mProgressBar;
     private Button mButtonReturn;
+    private Button mButtonAnalyze;
     private ImageView mImageView;
     private RecyclerView mIngredientList;
     private IngredientAdapter mAdapter = new IngredientAdapter();
+
     @Override
     protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +61,7 @@ public class CaptureActivity extends AppCompatActivity {
         /* Typical usage of findViewById... */
         mProgressBar = (ProgressBar) findViewById(R.id.pb_processing);
         mButtonReturn = (Button) findViewById(R.id.bn_return);
+        mButtonAnalyze = (Button) findViewById(R.id.bn_analyze);
         mImageView = (ImageView) findViewById(R.id.iv_image);
         mIngredientList = (RecyclerView) findViewById(R.id.rv_prediction);
 
@@ -63,8 +70,10 @@ public class CaptureActivity extends AppCompatActivity {
         mIngredientList.setLayoutManager(new LinearLayoutManager(this));
         mIngredientList.setAdapter(mAdapter);
 
+        setUpItemTouchHelper();
         handleImage();
         initReturnButton();
+        initAnalyzeButton();
     }
 
     //Setting RETURN Button
@@ -81,6 +90,66 @@ public class CaptureActivity extends AppCompatActivity {
         });
     }
 
+    //Setting ANALYZE Button
+    //When user clicks this button, current page will forward to the AnalyzeNutritionActivity
+    private void initAnalyzeButton(){
+        mButtonAnalyze.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Context context = CaptureActivity.this;
+                Class destinationActivity = io.krumbs.sdk.starter.AnalyzeNutritionActivity.class;
+                Intent startChildActivityIntent = new Intent(context, destinationActivity);
+//TODO need modify
+                List<String> ingredients;
+                ingredients = new ArrayList<String>();
+                for(Concept concept:mAdapter.getConcepts()){
+                    ingredients.add(concept.name());
+                }
+
+              //  startChildActivityIntent.putStringArrayListExtra("INGREDIENTS",(ArrayList<String>) ingredients);
+                startActivity(startChildActivityIntent);
+            }
+        });
+    }
+
+    // SWIPE TO DELETE
+    /**
+     * This is the standard support library way of implementing "swipe to delete" feature. You can do custom drawing in onChildDraw method
+     * but whatever you draw will disappear once the swipe is over, and while the items are animating to their new position the recycler view
+     * background will be visible. That is rarely an desired effect.
+     */
+    private void setUpItemTouchHelper(){
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT){
+            //not important, we don't want drag & drop
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                mAdapter.removeItem(viewHolder.getAdapterPosition());
+            }
+
+            @Override
+            public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                View itemView = viewHolder.itemView;
+                // not sure why, but this method get's called for viewholder that are already swiped away
+                if (viewHolder.getAdapterPosition() == -1) {
+                    // not interested in those
+                    return;
+                }
+                // draw red background
+                Drawable background = new ColorDrawable(Color.RED);
+                background.setBounds(itemView.getRight() + (int)dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
+                background.draw(c);
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+        };
+
+        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        mItemTouchHelper.attachToRecyclerView(mIngredientList);
+    }
 
     private void handleImage(){
         Intent intentThatStartedThisActivity = getIntent();

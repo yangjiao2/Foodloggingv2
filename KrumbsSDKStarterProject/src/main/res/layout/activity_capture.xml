@@ -16,13 +16,28 @@
         android:layout_width="wrap_content"
         android:layout_height="180dp"
         android:id="@+id/iv_image" />
-    <Button
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Return"
         android:backgroundTint="@color/light_blue"
         android:id="@+id/bn_return"
         android:layout_gravity="start"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Analyze"
+            android:backgroundTint="@color/light_blue"
+            android:id="@+id/bn_analyze"
+            android:layout_gravity="end"/>
+    </LinearLayout>
+
+
+
     <ProgressBar
         android:layout_width="20dp"
         android:layout_height="20dp"

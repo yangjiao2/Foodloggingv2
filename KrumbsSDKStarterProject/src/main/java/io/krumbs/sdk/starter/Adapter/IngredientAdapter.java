@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import clarifai2.dto.prediction.Concept;
@@ -20,10 +21,20 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Vi
     //List type, used to hold results received from Clarifai. The result is class CONCEPT from Clarifai.
     //CONCEPT type mainly has three elements, ID, NAME and VALUE. You can use concept.id(), concept.name(),
     // concept.value() to get these attributes. The VALUE is the probability, float type.
+    private static final int limitedNumber = 10;
     private static List<Concept> concepts =new ArrayList<>();
 
+    public List<Concept> getConcepts(){
+        return concepts;
+    }
+
     public IngredientAdapter setData(List<Concept> list){
-        concepts = list;
+        concepts=list;
+        //Limiting the number of desplay item
+        int times = list.size()-limitedNumber;
+        for(int i=0;i<times;i++){
+            concepts.remove(limitedNumber);
+        }
         notifyDataSetChanged();
         return this;
     }
@@ -46,6 +57,11 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Vi
     @Override
     public int getItemCount() {
         return concepts.size();
+    }
+
+    public void removeItem(int position){
+        concepts.remove(position);
+        notifyItemRemoved(position);
     }
 
     //////////////////////////////////////////////////////////////////////////
