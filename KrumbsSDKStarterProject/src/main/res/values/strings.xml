@@ -11,10 +11,19 @@
     <string name="clarifai_client_id">iHhYlH55Vhkk2XsV-ucG5TddwM-NH1Zne5lTqWjE</string>
     <string name="clarifai_client_secret">jQELXrDppUgSHtp4N39HKoNjHACu0oMVIIudeiwQ</string>
 
-    <string name="app_name">Krumbs SDK Starter Project</string>
+    <string name="edamam_app_id">0cbe9f06</string>
+    <string name="edamam_app_key">166aaed6063736b531c131709213b00f</string>
 
-    <string name="hello_world">Hello World!</string>
+    <string name="app_name">Food Log</string>
+
     <string name="krumbs_sdk_app">Krumbs SDK Application</string>
     <string name="action_settings">Settings</string>
     <string name="kcapturebuttonLabel">Start K-Capture</string>
+
+    <string name="calorie">Calorie</string>
+    <string name="weight">Total Weight</string>
+    <string name="fat">Fat</string>
+    <string name="proteint">Protein</string>
+    <string name="carbs">Carbohydrates</string>
+
 </resources>

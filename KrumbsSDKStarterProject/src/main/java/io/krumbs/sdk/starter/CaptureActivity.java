@@ -35,6 +35,7 @@ import clarifai2.dto.model.ConceptModel;
 import clarifai2.dto.model.output.ClarifaiOutput;
 import clarifai2.dto.prediction.Concept;
 
+import static io.krumbs.sdk.starter.StarterApplication.INGREDIENT;
 import static io.krumbs.sdk.starter.StarterApplication.INTENT_IMAGE_URI;
 import static io.krumbs.sdk.starter.StarterApplication.INTENT_IMAGE_URL;
 import io.krumbs.sdk.starter.Adapter.IngredientAdapter;
@@ -105,7 +106,7 @@ public class CaptureActivity extends AppCompatActivity {
                     ingredients.add(concept.name());
                 }
 
-                startChildActivityIntent.putStringArrayListExtra("INGREDIENTS",(ArrayList<String>) ingredients);
+                startChildActivityIntent.putStringArrayListExtra(INGREDIENT,(ArrayList<String>) ingredients);
                 startActivity(startChildActivityIntent);
             }
         });
@@ -149,6 +150,7 @@ public class CaptureActivity extends AppCompatActivity {
         ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
         mItemTouchHelper.attachToRecyclerView(mIngredientList);
     }
+
 
     private void handleImage(){
         Intent intentThatStartedThisActivity = getIntent();
