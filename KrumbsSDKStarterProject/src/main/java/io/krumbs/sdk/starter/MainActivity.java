@@ -41,7 +41,17 @@ import io.krumbs.sdk.starter.Data.FoodlogDbHelper;
 
 import static io.krumbs.sdk.starter.StarterApplication.INTENT_IMAGE_URI;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptureReadyCallback {
 
@@ -58,12 +68,38 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
     private String mDate = "";
 
     private static final int SELECT_PICTURE = 212;
+
+    private DatabaseReference mFirebaseDatabaseReference;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //preloadMaps();
 
         setContentView(R.layout.activity_main);
+
+        mFirebaseAuth = FirebaseAuth.getInstance();
+
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+
+
+        if (mFirebaseUser == null) {
+
+            // Not signed in, launch the Sign In activity
+            startActivity(new Intent(this, SignInActivity.class));
+            finish();
+            return;
+        }
+
+        mUsername = mFirebaseUser.getDisplayName();
+        mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+
+
+
+
 
         mToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         mFABGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);

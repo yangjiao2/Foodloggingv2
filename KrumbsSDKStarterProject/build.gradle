@@ -20,14 +20,52 @@ android {
     packagingOptions {
         exclude 'META-INF/NOTICE' // will not include NOTICE file
         exclude 'META-INF/LICENSE' // will not include LICENSE file
+        exclude 'META-INF/LICENSE-FIREBASE.txt'
     }
 }
 
 dependencies {
+    // General
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+
     //KRUMBS API
     compile 'io.krumbs.sdk:krumbs-sdk:2.3.0-SNAPSHOT'
     //CLARIFI API
     compile 'com.clarifai.clarifai-api2:core:2.0.2'
     compile 'com.android.support:recyclerview-v7:25.1.1'
+    compile 'com.google.firebase:firebase-core:10.2.0'
+    compile 'com.google.firebase:firebase-database:10.2.0'
+    compile 'com.google.firebase:firebase-auth:10.2.0'
+    compile 'com.google.firebase:firebase-storage:10.2.0'
+
+
+    // Google
+
+    compile 'com.google.android.gms:play-services-auth:10.2.0'
+
+
+
+    // Firebase
+    compile 'com.google.firebase:firebase-database:10.2.0'
+    compile 'com.google.firebase:firebase-storage:10.2.0'
+    compile 'com.google.firebase:firebase-auth:10.2.0'
+    compile 'com.google.firebase:firebase-config:10.2.0'
+    compile 'com.google.android.gms:play-services-appinvite:10.2.0'
+    compile 'com.google.firebase:firebase-messaging:10.2.0'
+    compile 'com.google.android.gms:play-services-ads:10.2.0'
+    compile 'com.google.firebase:firebase-appindexing:10.2.0'
+    compile 'com.google.firebase:firebase-crash:10.2.0'
+    compile 'com.google.firebase:firebase-analytics:10.2.0'
+
+
+
+    // Firebase UI
+
+    compile 'com.firebaseui:firebase-ui-database:0.4.0'
+
 
 }
+
+apply plugin: 'com.google.gms.google-services'
