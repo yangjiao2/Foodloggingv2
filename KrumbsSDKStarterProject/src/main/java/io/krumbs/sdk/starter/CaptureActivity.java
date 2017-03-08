@@ -4,7 +4,6 @@ package io.krumbs.sdk.starter;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -21,8 +20,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.view.View;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +37,6 @@ import clarifai2.dto.prediction.Concept;
 
 import static io.krumbs.sdk.starter.StarterApplication.INGREDIENT;
 import static io.krumbs.sdk.starter.StarterApplication.INTENT_IMAGE_URI;
-import static io.krumbs.sdk.starter.StarterApplication.INTENT_IMAGE_URL;
 import io.krumbs.sdk.starter.Adapter.IngredientAdapter;
 
 /**
@@ -45,7 +44,7 @@ import io.krumbs.sdk.starter.Adapter.IngredientAdapter;
  */
 
 public class CaptureActivity extends AppCompatActivity {
- //   private TextView mDisplayText;
+
     private ProgressBar mProgressBar;
     private Button mButtonReturn;
     private Button mButtonAnalyze;
@@ -65,8 +64,8 @@ public class CaptureActivity extends AppCompatActivity {
         mImageView = (ImageView) findViewById(R.id.iv_image);
         mIngredientList = (RecyclerView) findViewById(R.id.rv_prediction);
 
+
         //Setting RecyclerView
-        mProgressBar.setVisibility(View.VISIBLE);
         mIngredientList.setLayoutManager(new LinearLayoutManager(this));
         mIngredientList.setAdapter(mAdapter);
 
@@ -79,6 +78,7 @@ public class CaptureActivity extends AppCompatActivity {
     //Setting RETURN Button
     //When user clicks this button, current page will return to the mainActiviy
     private void initReturnButton(){
+        mProgressBar.setVisibility(View.VISIBLE);
         mButtonReturn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -90,9 +90,12 @@ public class CaptureActivity extends AppCompatActivity {
         });
     }
 
+
+
     //Setting ANALYZE Button
     //When user clicks this button, current page will forward to the AnalyzeNutritionActivity
     private void initAnalyzeButton(){
+        mButtonAnalyze.setVisibility(View.INVISIBLE);
         mButtonAnalyze.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -106,6 +109,14 @@ public class CaptureActivity extends AppCompatActivity {
                     ingredients.add(concept.name());
                 }
 
+                //Passing the image to the next activity
+                Intent intentThatStartedThisActivity = getIntent();
+                if (intentThatStartedThisActivity.hasExtra(INTENT_IMAGE_URI)) {
+                    startChildActivityIntent.putExtra(INTENT_IMAGE_URI,
+                            intentThatStartedThisActivity.getStringExtra(INTENT_IMAGE_URI));
+                }
+
+                /*Switch to the AnalyzeNutritionActivity with list of ingredients*/
                 startChildActivityIntent.putStringArrayListExtra(INGREDIENT,(ArrayList<String>) ingredients);
                 startActivity(startChildActivityIntent);
             }
@@ -131,6 +142,8 @@ public class CaptureActivity extends AppCompatActivity {
                 mAdapter.removeItem(viewHolder.getAdapterPosition());
             }
 
+            /*When swipe left, a red background will be revealed. onChildDraw() is the function drawing the after-swipe picture.
+            * You can comment onChildDraw() if you don't want the red background*/
             @Override
             public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
                 View itemView = viewHolder.itemView;
@@ -155,15 +168,7 @@ public class CaptureActivity extends AppCompatActivity {
     private void handleImage(){
         Intent intentThatStartedThisActivity = getIntent();
         Bitmap bitmap=null;
-        //The format of image path is either URL or URI.
-        if (intentThatStartedThisActivity.hasExtra(INTENT_IMAGE_URL)) {
-            String imagePath = intentThatStartedThisActivity.getStringExtra(INTENT_IMAGE_URL);
-            File imgFile = new File(imagePath);
-            if(imgFile.exists()) {
-                bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-            }
-        }
-        else if (intentThatStartedThisActivity.hasExtra(INTENT_IMAGE_URI)){
+        if (intentThatStartedThisActivity.hasExtra(INTENT_IMAGE_URI)){
             String str_imageUri= intentThatStartedThisActivity.getStringExtra(INTENT_IMAGE_URI);
             Uri mImageUri = Uri.parse(str_imageUri);
             try {
@@ -175,6 +180,7 @@ public class CaptureActivity extends AppCompatActivity {
 
         //Display image with bitmap
         mImageView.setImageBitmap(bitmap);
+        //mImageView.setImageUri(mImageUri);
         //
         try{
             final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
@@ -236,6 +242,7 @@ public class CaptureActivity extends AppCompatActivity {
                 List<Concept> concepts = predictions.get(0).data();
                 mAdapter.setData(concepts);
                 mProgressBar.setVisibility(View.INVISIBLE);
+                mButtonAnalyze.setVisibility(View.VISIBLE);
             }
         }.execute();
     }

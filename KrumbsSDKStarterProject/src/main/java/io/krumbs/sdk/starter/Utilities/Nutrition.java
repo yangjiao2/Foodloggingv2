@@ -56,12 +56,29 @@ public class Nutrition {
         carbs=0;
     }
 
+    public void reset(){
+        calorie=0;
+        totalweight=0;
+        fat=0;
+        protein=0;
+        carbs=0;
+    }
+
     public void add(Nutrition nutri){
         this.calorie+=nutri.calorie;
         this.totalweight+=nutri.totalweight;
         this.fat+=nutri.fat;
         this.protein+=nutri.protein;
         this.carbs+=nutri.carbs;
+    }
+
+    public void setWeight(int newWeight){
+        float rate = newWeight / (float)totalweight;
+        this.carbs = this.carbs * rate;
+        this.fat = this.fat * rate;
+        this.protein = this.protein * rate;
+        this.calorie = (int) (this.calorie * rate);
+        totalweight = newWeight;
     }
 
     /*Edamam Nutrition JSON format

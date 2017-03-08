@@ -9,19 +9,25 @@ import com.google.android.gms.maps.MapView;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.CalendarView;
+import android.widget.Toast;
 
+import java.io.File;
+import java.sql.Date;
 import java.util.Map;
 
-import bolts.Capture;
 import io.krumbs.sdk.KrumbsSDK;
 import io.krumbs.sdk.dashboard.KDashboardFragment;
 import io.krumbs.sdk.dashboard.KGadgetDataTimePeriod;
@@ -29,35 +35,72 @@ import io.krumbs.sdk.dashboard.KGadgetType;
 import io.krumbs.sdk.data.model.Event;
 import io.krumbs.sdk.krumbscapture.KCaptureCompleteListener;
 import io.krumbs.sdk.krumbscapture.settings.KUserPreferences;
+import io.krumbs.sdk.starter.Adapter.FoodlogHistoryAdapter;
+import io.krumbs.sdk.starter.Data.DbContract;
+import io.krumbs.sdk.starter.Data.FoodlogDbHelper;
 
 import static io.krumbs.sdk.starter.StarterApplication.INTENT_IMAGE_URI;
-import static io.krumbs.sdk.starter.StarterApplication.INTENT_IMAGE_URL;
+
 
 
 public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptureReadyCallback {
+
     private KGadgetDataTimePeriod defaultInitialTimePeriod = KGadgetDataTimePeriod.TODAY;
     private KDashboardFragment kDashboard;
     private View startCaptureButton;
+    private RecyclerView mRVAllFoodlogHistory;
+    private CalendarView mCalendar;
+    private Toolbar mToolbar;
     private FloatingActionButton mFABGallery;
+
+    private FoodlogHistoryAdapter mAdapter;
+    private SQLiteDatabase mDb;
+    private String mDate = "";
 
     private static final int SELECT_PICTURE = 212;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        preloadMaps();
+        //preloadMaps();
 
-        setContentView(R.layout.app_bar_main);
+        setContentView(R.layout.activity_main);
+
+        mToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        mFABGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
+        startCaptureButton = findViewById(R.id.start_report_button);
+        mRVAllFoodlogHistory = (RecyclerView) findViewById(R.id.rv_all_foodlog_history);
+        mCalendar = (CalendarView) findViewById(R.id.cv_calendar);
+
         //setting the toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(toolbar);
-        if (savedInstanceState == null) {
+        setSupportActionBar(mToolbar);
+
+        //setting the dashboard, only MAP shows up
+        //We don't need the map
+/*        if (savedInstanceState == null) {
             kDashboard = buildDashboard();
             getSupportFragmentManager().beginTransaction().replace(R.id.content, kDashboard).commit();
-        }
-        KrumbsSDK.setUserPreferences(
-                new KUserPreferences.KUserPreferencesBuilder().audioRecordingEnabled(true).build());
+        }*/
+
+        //setting Krumbs's preference , I don't know why Krumbs needs this.
+/*        KrumbsSDK.setUserPreferences(
+                new KUserPreferences.KUserPreferencesBuilder().audioRecordingEnabled(true).build());*/
+
+        initButton();
+
+        initFoodlogRecyclerView();
+
+        initCalendar();
+
+        setupSwipeDelete();
+
+        // It is REQUIRED to set this Callback for Krumbs Capture to Work.
+        // You can  invoke KrumbsSDK.startCapture only when this callback returns. Not setting this correctly will
+        // result in exceptions. Also note that the startCaptureButton is hidden until this callback returns.
+        KrumbsSDK.setKCaptureReadyCallback(this);
+    }
+
+    private void initButton(){
         //setting the capture button
-        startCaptureButton = findViewById(R.id.start_report_button);
         startCaptureButton.setEnabled(false);
         startCaptureButton.setVisibility(View.INVISIBLE);
         if (startCaptureButton != null) {
@@ -72,7 +115,6 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
         }
 
         //setting the gallery button
-        mFABGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
         mFABGallery.setVisibility(View.VISIBLE);
         mFABGallery.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -80,11 +122,51 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
                 onClickFABGallery();
             }
         });
+    }
 
-        // It is REQUIRED to set this Callback for Krumbs Capture to Work.
-        // You can  invoke KrumbsSDK.startCapture only when this callback returns. Not setting this correctly will
-        // result in exceptions. Also note that the startCaptureButton is hidden until this callback returns.
-        KrumbsSDK.setKCaptureReadyCallback(this);
+    private void initFoodlogRecyclerView(){
+        //setting the recyclerView, showing all foodlog history
+        //set layout for the RecyclerView, because it's a list we are using the linear layout
+        mRVAllFoodlogHistory.setLayoutManager(new LinearLayoutManager(this));
+        //Create a DB helper
+        FoodlogDbHelper dbHelper = new FoodlogDbHelper(this);
+        // Keep a reference to the mDb until paused or killed. Get a writable database
+        mDb = dbHelper.getWritableDatabase();
+        //Get all foodlog history from the database and save in a cursor
+        mDate = new Date(mCalendar.getDate()).toString();
+        Cursor cursor = getFoodlogForChosenDate(mDate);
+        // Create an adapter for that cursor to display the data
+        mAdapter = new FoodlogHistoryAdapter(cursor);
+        //Link the adapter to the RecyclerView
+        mRVAllFoodlogHistory.setAdapter(mAdapter);
+    }
+
+    private void initCalendar(){
+        mCalendar.setFirstDayOfWeek(2);
+        mCalendar.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            /*
+            * month [0,11]
+            * day of Month [1,31]
+            * */
+            @Override
+            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
+                //Get all foodlog from the database and save in a cursor
+                //Build the  YYYY-MM-DD format
+                String date = String.valueOf(year) + "-" ;
+                month++;
+                if(month<10) date+="0";
+                date+=String.valueOf(month) + "-";
+                if(dayOfMonth<10) date+="0";
+                date+=String.valueOf(dayOfMonth);
+
+                mDate = date;
+                Cursor cursor = getFoodlogForChosenDate(mDate);
+                //Update the data in Foodlog RecyclerView
+                mAdapter.swapCursor(cursor);
+
+                Toast.makeText(getApplicationContext(),mDate, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void preloadMaps() {
@@ -103,10 +185,10 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
                 }
             }
         });
-        // alternatively: http://stackoverflow.com/questions/26178212/first-launch-of-activity-with-google-maps-is-very-slow
 
     }
 
+    //We don't need so much intent
     private KDashboardFragment buildDashboard() {
         return new KDashboardFragment.KDashboardBuilder()
                 .addGadget(KGadgetType.REPORTS)
@@ -120,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
 
     private void startCapture() {
         int containerId = R.id.camera_container;
-// SDK usage step 4 - Start the K-Capture component and add a listener to handle returned images and URLs
+        // SDK usage step 4 - Start the K-Capture component and add a listener to handle returned images and URLs
         KrumbsSDK.startCapture(containerId, this, new KCaptureCompleteListener() {
             @Override
             public void captureCompleted(CompletionState completionState, boolean audioCaptured,
@@ -129,14 +211,14 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
                     Log.i("KRUMBS-CALLBACK", "STATUS" + ": " + completionState.toString());
                 }
                 if (completionState == CompletionState.CAPTURE_SUCCESS) {
-// The local image url for your capture
+                    // The local image url for your capture
                     String imagePath = (String) map.get(KCaptureCompleteListener.CAPTURE_MEDIA_IMAGE_PATH);
                     if (audioCaptured) {
-// The local audio url for your capture (if user decided to record audio)
+                        // The local audio url for your capture (if user decided to record audio)
                         String audioPath = (String) map.get(KCaptureCompleteListener.CAPTURE_MEDIA_AUDIO_PATH);
                         Log.i("KRUMBS-CALLBACK", audioPath);
                     }
-// The mediaJSON url for your capture
+                    // The mediaJSON url for your capture
                     String mediaJSONUrl = (String) map.get(KCaptureCompleteListener.CAPTURE_MEDIA_JSON_URL);
                     Log.i("KRUMBS-CALLBACK", mediaJSONUrl + ", " + imagePath);
                     if (map.containsKey(KCaptureCompleteListener.CAPTURE_EVENT)) {
@@ -144,12 +226,8 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
                         Log.i("KRUMBS-CALLBACK", "Event captured = " + ev.objectId());
                     }
 
-                    /*TODO send the image to the CaptureActivity*/
-                    Context context = MainActivity.this;
-                    Class destinationActivity = CaptureActivity.class;
-                    Intent startChildActivityIntent = new Intent(context, destinationActivity);
-                    startChildActivityIntent.putExtra(INTENT_IMAGE_URL, imagePath);
-                    startActivity(startChildActivityIntent);
+                    /*TODO switch to the CaptureActivity with INTENT_IMAGE_URL*/
+                      switchToCaptureActivity(Uri.fromFile(new File(imagePath)).toString());
 
 
                 } else if (completionState == CompletionState.CAPTURE_CANCELLED ||
@@ -159,59 +237,9 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        switch (defaultInitialTimePeriod) {
-            case TODAY:
-                menu.findItem(R.id.last_day).setChecked(true);
-                break;
-            case LAST_24_HOURS:
-                menu.findItem(R.id.last_24h).setChecked(true);
-                break;
-            case LAST_30_DAYS:
-                menu.findItem(R.id.last_month).setChecked(true);
-                break;
-            case LAST_12_MONTHS:
-                menu.findItem(R.id.last_year).setChecked(true);
-                break;
-            default:
-                break;
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        item.setChecked(true);
-        switch (item.getItemId()) {
-            case R.id.last_day:
-                defaultInitialTimePeriod = KGadgetDataTimePeriod.TODAY;
-                break;
-            case R.id.last_24h:
-                defaultInitialTimePeriod = KGadgetDataTimePeriod.LAST_24_HOURS;
-                break;
-            case R.id.last_month:
-                defaultInitialTimePeriod = KGadgetDataTimePeriod.LAST_30_DAYS;
-                break;
-            case R.id.last_year:
-                defaultInitialTimePeriod = KGadgetDataTimePeriod.LAST_12_MONTHS;
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-        //send notification to the SDK to update the Dashboard
-        if (kDashboard != null) {
-            kDashboard.refreshDashboard(defaultInitialTimePeriod);
-        }
-        return true;
-    }
-
-    //    http://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa
+/*
+* Do not delete or comment the onSaveInstanceState() function
+* */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         //No call for super(). Bug on API Level > 11.
@@ -235,22 +263,107 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
         startActivityForResult(Intent.createChooser(intentGallery,"Select Picture"),SELECT_PICTURE);
     }
 
+    /*
+    * Receive result returned by other intent.
+    * */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         //handle the image result returned from the ImageGallery
         if (resultCode == RESULT_OK) {
+            //The intent is chossing picture from gallery.
             if (requestCode == SELECT_PICTURE) {
                 Uri selectedImageUri = data.getData();
                 if (null != selectedImageUri) {
                     //Change to child activity
-                    Context context = MainActivity.this;
-                    Class destinationActivity = CaptureActivity.class;
-                    Intent startChildActivityIntent = new Intent(context, destinationActivity);
-                    startChildActivityIntent.putExtra(INTENT_IMAGE_URI, selectedImageUri.toString());
-                    startActivity(startChildActivityIntent);
+                    /*TODO switch to the CaptureActivity with INTENT_IMAGE_URI*/
+                    switchToCaptureActivity(selectedImageUri.toString());
                 }
             }
         }
+    }
+
+    private void switchToCaptureActivity(String image_uri){
+        Context context = MainActivity.this;
+        Class destinationActivity = CaptureActivity.class;
+        Intent startChildActivityIntent = new Intent(context, destinationActivity);
+        startChildActivityIntent.putExtra(INTENT_IMAGE_URI, image_uri);
+        startActivity(startChildActivityIntent);
+    }
+
+    /*
+    * SQLitedatabase.query
+    * @param table:String  The table name to compile the query against.
+    * @param columns:String[]  A list of which columns to return. Passing null will return all
+    *        columns, which is discouraged to prevent reading data from storage that isn't going
+    *        to be used.
+    * @param selection:String A filter declaring which rows to return, formatted as an SQL WHERE
+     *       clause (excluding the WHERE itself). Passing null will return all rows for the given
+      *       table.
+    * @param selectionArgs:String[] You may include ?s in selection, which will be replaced by
+    *        the values from selectionArgs, in order that they appear in the selection. The values
+    *        will be bound as Strings.
+    * @param groupBy:String A filter declaring how to group rows, formatted as an SQL GROUP BY
+    *        clause (excluding the GROUP BY itself). Passing null will cause the rows to not be
+    *        grouped.
+    * @param having:String A filter declare which row groups to include in the cursor, if row
+    *        grouping is being used, formatted as an SQL HAVING clause (excluding the HAVING
+    *        itself). Passing null will cause all row groups to be included, and is required when
+     *        row grouping is not being used.
+    * @param orderBy:String How to order the rows, formatted as an SQL ORDER BY clause (excluding
+    *        the ORDER BY itself). Passing null will use the default sort order, which may be
+     *        unordered.
+    * */
+
+    //@param date : YYYY-MM-DD
+    private Cursor getFoodlogForChosenDate(String date){
+
+        String sortOrder = DbContract.FoodlogEntry.COLUMN_DATE + " DESC ";
+        // { date = 'YYYY-MM-DD' }
+        String selection = DbContract.FoodlogEntry.COLUMN_DATE + "= '" + date + "'";
+        return mDb.query(
+                DbContract.FoodlogEntry.TABLE_NAME,
+                null,
+                selection,    //where date = "YYYY-MM-DD"
+                null,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    private void setupSwipeDelete(){
+        // Create a new ItemTouchHelper with a SimpleCallback that handles LEFT swipe directions
+        // Create an item touch helper to handle swiping items off the list
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT ) {
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                //do nothing, we only care about swiping
+                return false;
+            }
+
+             @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                //get the id of the item being swiped
+                long id = (long) viewHolder.itemView.getTag();
+                //remove from DB
+                removeFoodlog(id);
+                //update the list
+                mAdapter.swapCursor(getFoodlogForChosenDate(mDate));
+            }
+
+            //attach the ItemTouchHelper to the waitlistRecyclerView
+        }).attachToRecyclerView(mRVAllFoodlogHistory);
+    }
+
+    /**
+     * Removes the record with the specified id
+     *
+     * @param id the DB id to be removed
+     * @return True: if removed successfully, False: if failed
+     */
+    private boolean removeFoodlog(long id) {
+        return mDb.delete(DbContract.FoodlogEntry.TABLE_NAME, DbContract.FoodlogEntry._ID + "=" + id, null) > 0;
     }
 }

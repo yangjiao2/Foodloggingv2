@@ -27,7 +27,7 @@ public class StarterApplication extends Application {
 
     //URI and URL below are used to distinguished the form of image path.
     public static final String INTENT_IMAGE_URI = "image_uri";
-    public static final String INTENT_IMAGE_URL = "image_url";
+  //  public static final String INTENT_IMAGE_URL = "image_url";
     public static final String INGREDIENT = "ingredient";
 
     @Override
