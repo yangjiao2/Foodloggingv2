@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "944052014688",
+    "firebase_url": "https://foodloggingv2-5664e.firebaseio.com",
+    "project_id": "foodloggingv2-5664e",
+    "storage_bucket": "foodloggingv2-5664e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:944052014688:android:859dd62cc80bf7d6",
+        "android_client_info": {
+          "package_name": "io.krumbs.sdkdemo.starter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "944052014688-fc9cghdusjr89t8se892mc6db3e96r4o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.krumbs.sdkdemo.starter",
+            "certificate_hash": "c6f70ffcb2fb6f52b2076363607a7b1129e42b0b"
+          }
+        },
+        {
+          "client_id": "944052014688-a6h8r81qmnpbb0gb12kunq5tupqdts7b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVlHubHLMxQaEe6ise2fderD-0WJ3-ab4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "944052014688-a6h8r81qmnpbb0gb12kunq5tupqdts7b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

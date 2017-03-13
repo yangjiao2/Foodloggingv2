@@ -49,9 +49,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
+
 
 public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptureReadyCallback {
 
@@ -78,27 +76,16 @@ public class MainActivity extends AppCompatActivity implements KrumbsSDK.KCaptur
         super.onCreate(savedInstanceState);
         //preloadMaps();
 
-        setContentView(R.layout.activity_main);
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
-
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
-
-
-        if (mFirebaseUser == null) {
-
-            // Not signed in, launch the Sign In activity
-            startActivity(new Intent(this, SignInActivity.class));
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // Name, email address, and profile photo Url
+            startActivity(new Intent(this, EmailPasswordActivity.class));
             finish();
             return;
         }
 
-        mUsername = mFirebaseUser.getDisplayName();
-        mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
-
-
-
+        setContentView(R.layout.activity_main);
 
 
         mToolbar = (Toolbar) findViewById(R.id.my_toolbar);
