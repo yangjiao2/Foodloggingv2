@@ -26,4 +26,6 @@
     <string name="proteint">Protein</string>
     <string name="carbs">Carbohydrates</string>
 
+    <string name="foodscore">Food score</string>
+
 </resources>

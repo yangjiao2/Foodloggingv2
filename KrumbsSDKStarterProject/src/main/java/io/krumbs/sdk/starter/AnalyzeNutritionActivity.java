@@ -43,6 +43,12 @@ public class AnalyzeNutritionActivity extends AppCompatActivity {
     private SeekBar mSBChangeWeight;
     private TextView mTVDisplayWeight;
     private Nutrition mNutrition;
+    private TextView mFoodScoreValue;
+    private float foodscore = 100;
+    private float calorie;
+    private float fat;
+    private float protein;
+    private float carbs;
 
     // unit gram
     private static final int max_food_weight = 800;
@@ -65,7 +71,7 @@ public class AnalyzeNutritionActivity extends AppCompatActivity {
         mSBChangeWeight = (SeekBar) findViewById(R.id.sb_change_weight);
         mTVDisplayWeight = (TextView) findViewById(R.id.tv_display_weight);
         mNutrition = new Nutrition();
-
+        mFoodScoreValue = (TextView) findViewById(R.id.foodscore_value);
         initReturnButton();
         initSeekBar();
         handleIngredients();
@@ -118,9 +124,10 @@ public class AnalyzeNutritionActivity extends AppCompatActivity {
                         mNutrition.add(tmp);
                     }
                     mNutrition.setWeight(max_food_weight);
+                    calculateFoodscore();
                     updateDisplayNutrition();
 
-                   }catch (JSONException e){
+                }catch (JSONException e){
                     e.printStackTrace();
                 }
             mButtonReturn.setVisibility(View.VISIBLE);
@@ -160,8 +167,36 @@ public class AnalyzeNutritionActivity extends AppCompatActivity {
                 Intent startChildActivityIntent = new Intent(context, destinationActivity);
                 storeData();
                 startActivity(startChildActivityIntent);
+
             }
         });
+    }
+
+    private void calculateFoodscore(){
+        calorie = mNutrition.calorie;
+        fat = mNutrition.fat;
+        protein = mNutrition.protein;
+        carbs =  mNutrition.carbs;
+
+        if (calorie * 0.35 <= fat) {
+            foodscore -= (fat - calorie * 0.35) / (calorie * 0.225);
+        }else if (calorie * 0.2 >= fat) {
+            foodscore += (calorie * 0.2 - fat) / (calorie * 0.225);
+        }
+
+        if (calorie *.65 <= carbs) {
+            foodscore -= (carbs - calorie * 0.65) / (calorie * 0.5);
+        }else if (calorie *.65 >= carbs) {
+            foodscore += (calorie * 0.45 - carbs) / (calorie * 0.5);
+        }
+
+        if (calorie *.35 <= protein) {
+            foodscore -= (protein - calorie * 0.35) / (calorie * 0.5);
+        }else if (calorie * 0.10 >= protein) {
+            foodscore += (calorie * 0.10 - protein) / (calorie * 0.5);
+        }
+
+
     }
 
     private void initSeekBar(){
@@ -176,6 +211,7 @@ public class AnalyzeNutritionActivity extends AppCompatActivity {
                 mTVDisplayWeight.setText(String.valueOf(result)+"g");
                 mNutrition.setWeight(result);
                 updateDisplayNutrition();
+                calculateFoodscore();
             }
 
             @Override
@@ -196,6 +232,7 @@ public class AnalyzeNutritionActivity extends AppCompatActivity {
         mTVFatValue.setText(String.format("%.2f",mNutrition.fat));
         mTVProteinValue.setText(String.format("%.2f",mNutrition.protein));
         mTVCarbsValue.setText(String.format("%.2f",mNutrition.carbs));
+        mFoodScoreValue.setText(String.format("%.2f", foodscore));
     }
 
 }

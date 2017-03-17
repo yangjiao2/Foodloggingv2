@@ -29,5 +29,5 @@ dependencies {
     //CLARIFI API
     compile 'com.clarifai.clarifai-api2:core:2.0.2'
     compile 'com.android.support:recyclerview-v7:25.1.1'
-
+    compile 'com.android.support:appcompat-v7:22.0.0'
 }
